@@ -112,18 +112,18 @@ def move_command(x, y, w, h):
     robot_status ['Face Center Y'] = 'Y: ' + str(y + h/2)
     robot_status ['Face Off Center'] = str(offCenter)
     
-    if offCenter < -40:
-        user_commands.append('manual-turn-left')
-        robot_status ['Direction'] = 'Left'
-    elif offCenter > 40:
-        user_commands.append('manual-turn-right')
-        robot_status ['Direction'] = 'Right'
+    off_center_percent = offCenter / CAMERA_WIDTH
+    
+    if abs(off_center_percent) > 0.05:
+        turn_amount = off_center_percent * 50
+        user_commands.append('manual-turn-' + str(turn_amount))
+        robot_status ['Direction'] = 'Turning to: ' + str(turn_amount)
     else:
         user_commands.append('manual-turn-neutral')
         robot_status ['Direction'] = 'Neutral'
     
     #Adjust acceleration based on face box width
-    if w < 150:
+    if w < 100:
         user_commands.append('manual-throttle-forward')
         robot_status ['Movement'] = 'Forward'
     elif w > 200:
