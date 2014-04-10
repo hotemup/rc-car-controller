@@ -181,8 +181,8 @@
         $( "#control-slider-steering" ).slider({
           range: "min",
           value: 75,
-          min: 0,
-          max: 180,
+          min: 40,
+          max: 100,
           slide: function( event, ui ) {
             $('#control-slider-steering-value').text(ui.value);
             sendCommand('manual-turn-'+ui.value);
@@ -200,8 +200,9 @@
           min: 0,
           max: 180,
           slide: function( event, ui ) {
-            $('#control-slider-throttle-value').text(ui.value);
-            sendCommand('manual-throttle-'+ui.value);
+            var throttleValue = 180 - ui.value;
+            $('#control-slider-throttle-value').text(throttleValue);
+            sendCommand('manual-throttle-'+throttleValue;
           }
         });
         $('#control-manual-stop').click(function(){
