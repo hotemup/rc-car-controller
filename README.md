@@ -27,6 +27,9 @@ Getting the Raspberry Pi Ready
 * Update/upgrade OS
  * sudo apt-get update
  * sudo apt-get upgrade
+* Install node.js
+ * wget http://node-arm.herokuapp.com/node_latest_armhf.deb
+ * sudo dpkg -i node_latest_armhf.deb
 * Install node modules
  * npm install socket.io express johnny-five opencv raspicam
 
