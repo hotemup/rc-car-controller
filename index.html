@@ -98,6 +98,7 @@
                             <div id="control-slider-throttle" style="height:100px;"></div>
                             </div>
                           <div class="col-sm-9">
+                            <input type="text" class="form-control" id="control-slider-throttle-for" placeholder="Run for X Milliseconds">
                             <span id="control-slider-throttle-value" class="badge">---</span>
                             <button type="button" id="control-manual-stop" class="btn btn-warning">Reset</button>
                           </div>
@@ -201,8 +202,15 @@
           max: 180,
           slide: function( event, ui ) {
             var throttleValue = 180 - ui.value;
+            var throttleFor = parseInt($('#control-slider-throttle-for').val());
             $('#control-slider-throttle-value').text(throttleValue);
-            sendCommand('manual-throttle-'+throttleValue;
+            console.log (throttleFor);
+            if (throttleFor > 0) {
+              sendCommand('manual-throttle-'+throttleValue+'-'+throttleFor);
+            }
+            else {
+              sendCommand('manual-throttle-'+throttleValue);
+            }
           }
         });
         $('#control-manual-stop').click(function(){

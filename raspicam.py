@@ -20,6 +20,7 @@ CAMERA_HEIGHT = 240
 
 #general
 server_address = '127.0.0.1'
+server_address = '192.168.1.14'
 server_port = 8000
 
 #command line arguments
@@ -53,7 +54,7 @@ while True:
     with picamera.PiCamera() as camera:
         camera.resolution = (CAMERA_WIDTH, CAMERA_HEIGHT)
         #start preview and warm up camera for a second
-        camera.start_preview()
+        #camera.start_preview()
         time.sleep(1)
         
         #start recording and end on user input to stop

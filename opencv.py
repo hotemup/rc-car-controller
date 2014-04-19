@@ -28,6 +28,7 @@ upper2_cascade = cv2.CascadeClassifier('cascade_files/haarcascade_mcs_upperbody.
 #general
 run_loop = True
 server_address = 'http://127.0.0.1'
+server_address = 'http://192.168.1.100'
 server_port = 8000
 stream = io.BytesIO()
 robot_status = {}
@@ -66,31 +67,17 @@ def detect_face(raw_image):
     gray = cv2.cvtColor(raw_image,cv2.COLOR_BGR2GRAY)
     faces = face_cascade.detectMultiScale(gray, 1.3, 5)
     for (x,y,w,h) in faces:
-        if (notFound):
-            cv2.rectangle(after_image,(x,y),(x+w,y+h),(255,255,0),2)
-            move_command(x, y, w, h)
-            notFound = False
-        else:
-            cv2.rectangle(after_image,(x,y),(x+w,y+h),(255,0,0),2)
+        cv2.rectangle(after_image,(x,y),(x+w,y+h),(255,0,0),2)
     
     bodies = body_cascade.detectMultiScale(gray, 1.3, 5)
     for (x,y,w,h) in bodies:
-        if (notFound):
-            cv2.rectangle(after_image,(x,y),(x+w,y+h),(255,255,0),2)
-            move_command(x, y, w, h)
-            notFound = False
-        else:
-            cv2.rectangle(after_image,(x,y),(x+w,y+h),(0,255,0),2)
+        cv2.rectangle(after_image,(x,y),(x+w,y+h),(0,255,0),2)
     
     uppers = upper_cascade.detectMultiScale(gray, 1.3, 5)
     for (x,y,w,h) in uppers:
-        if (notFound):
-            cv2.rectangle(after_image,(x,y),(x+w,y+h),(255,255,0),2)
-            move_command(x, y, w, h)
-            notFound = False
-        else:
-            cv2.rectangle(after_image,(x,y),(x+w,y+h),(0,0,255),2)
+        cv2.rectangle(after_image,(x,y),(x+w,y+h),(0,0,255),2)
     
+    #For now only apply movement to this
     uppers2 = upper2_cascade.detectMultiScale(gray, 1.3, 5)
     for (x,y,w,h) in uppers2:
         if (notFound):
@@ -104,7 +91,7 @@ def detect_face(raw_image):
 
 #generate movement command based on cascade detection box properties
 def move_command(x, y, w, h):
-    offCenter = x + w/2 - CAMERA_WIDTH/2
+    offCenter = x + w/2.0 - CAMERA_WIDTH/2.0
     print "({0}, {1}) {2}x{3}".format(x,y,w,h)
     print 'Off Center: ' + str(offCenter)
     robot_status ['General'] = 'Face found'
@@ -114,8 +101,10 @@ def move_command(x, y, w, h):
     
     off_center_percent = offCenter / CAMERA_WIDTH
     
-    if abs(off_center_percent) > 0.05:
-        turn_amount = off_center_percent * 50
+    if abs(off_center_percent) > 0.01:
+        turn_amount = off_center_percent * 150.0 + 75
+        print offCenter
+        print off_center_percent
         user_commands.append('manual-turn-' + str(turn_amount))
         robot_status ['Direction'] = 'Turning to: ' + str(turn_amount)
     else:
@@ -123,10 +112,12 @@ def move_command(x, y, w, h):
         robot_status ['Direction'] = 'Neutral'
     
     #Adjust acceleration based on face box width
-    if w < 100:
-        user_commands.append('manual-throttle-forward')
+    if w < 70 and w > 40:
+        #user_commands.append('manual-throttle-forward')
+        move_for = (70 - w)
+        user_commands.append('manual-throttle-forward-'+str(move_for))
         robot_status ['Movement'] = 'Forward'
-    elif w > 200:
+    elif w > 120:
         user_commands.append('manual-throttle-reverse')
         robot_status ['Movement'] = 'Reverse'
     else:
