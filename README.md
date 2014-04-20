@@ -24,9 +24,13 @@ Libraries Requirements
 
 Getting the Raspberry Pi Ready
 ------------------------------
-* Update/upgrade OS
+* Update/upgrade OS, then restart
  * sudo apt-get update
  * sudo apt-get upgrade
+ * sudo rpi-update
+ * sudo ldconfig
+ * sudo shutdown -r now
+* Note: If rpi-update doesn't work, certificates may be needed, there are notes on how to do this at the bottom
 * Install node.js
  * wget http://node-arm.herokuapp.com/node_latest_armhf.deb
  * sudo dpkg -i node_latest_armhf.deb
@@ -35,7 +39,7 @@ Getting the Raspberry Pi Ready
 
 To run opencv.py
 * Install python libraries
- * sudo apt-get install libopencv-dev python-opencv python-dev python-picamera
+ * sudo apt-get install libopencv-dev python-pip python-opencv python-dev python-picamera
 * Only for old_opencv.py - not needed otherwise
  * sudo pip install socketIO-client
 
@@ -76,4 +80,15 @@ Possible Future Library Requirements
  * sudo apt-get install libzmq-dev
  * npm install zerorpc
  * sudo pip install zerorpc
- 
+
+Other Information
+-----------------
+
+* If rpi-update doesn't work, git and/or certifications may be needed, use Hexxeh
+ * $ sudo apt-get install ca-certificates
+ * $ sudo apt-get install git-core
+ * $ sudo apt-get install rpi-update
+* Then use rpi-update as normal
+ * $ sudo rpi-update
+ * $ sudo ldconfig
+ * $ sudo reboot
