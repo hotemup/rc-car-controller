@@ -5,6 +5,8 @@ Outputs results to a stream
 
 """
 
+https://docs.python.org/2/library/optparse.html
+
 import json
 import os
 import picamera
@@ -12,7 +14,7 @@ import io
 import socket
 import struct
 import time
-import sys, getopt
+from optparse import OptionParser
 
 #constants
 CAMERA_WIDTH = 320
@@ -24,25 +26,27 @@ server_address = '192.168.1.14'
 server_port = 8000
 
 #command line arguments
-try:
-    opts, args = getopt.getopt(sys.argv,"hs:p:x:y:",["server=","port=","width=","height="])
-except getopt.GetoptError:
-    print 'improper use of arguments'
-    sys.exit(2)
-for opt, arg in opts:
-    if opt == '-h':
-        print 'picamera.py: -s/--server for server address, -p/--port for port,\n   -x/--width for CAMERA_EIDTH, -x/--height for CAMERA_HEIGHT'
-        sys.exit()
-    #server address
-    elif opt in ("-s", "--server"):
-        server_address = arg
-    elif opt in ("-p", "--port"):
-        server_port = int(arg)
-    #adjust camera resolution
-    elif opt in ("-x", "--width"):
-        CAMERA_WIDTH = int(arg)
-    elif opt in ("-y", "--height"):
-        CAMERA_HEIGHT = int(arg)
+parser = OptionParser()
+parser.add_option("-s", "--server", dest="server",
+    help="address of the server to send picamera image to")
+parser.add_option("-p", "--port", dest="port",
+    help="port socket will use")
+parser.add_option("-x", "--width", dest="width",
+    help="width of camera resolution")
+parser.add_option("-y", "--height", dest="height",
+    help="height of camera resolution")
+
+(options, args) = parser.parse_args()
+#server address
+if options.server:
+    server_address = options.server
+if options.port:
+    server_port = options.port
+#adjust camera resolution
+if options.width:
+    CAMERA_WIDTH = options.width
+if options.height:
+    CAMERA_HEIGHT = options.height
 
 #connect a client socket to server
 client_socket = socket.socket()

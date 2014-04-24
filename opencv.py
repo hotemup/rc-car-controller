@@ -13,10 +13,10 @@ import socket
 import struct
 import datetime
 import time
-import sys, getopt
 import numpy as np
 import cv2
 import urllib2
+from optparse import OptionParser
 
 CAMERA_WIDTH = 320
 CAMERA_HEIGHT = 240
@@ -36,25 +36,23 @@ user_commands = []
 after_image = '';
 
 #command line arguments
-try:
-    opts, args = getopt.getopt(sys.argv,"hs:p:",["server=","port="])
-except getopt.GetoptError:
-    print 'improper use of arguments'
-    sys.exit(2)
-for opt, arg in opts:
-    if opt == '-h':
-        print 'opencv.py: -p for port'
-        sys.exit()
-    #port to listen to address
-    elif opt in ("-s", "--server"):
-        server_address = arg
-    elif opt in ("-p", "--port"):
-        server_port = int(arg)
+parser = OptionParser()
+parser.add_option("-s", "--server", dest="server",
+    help="address of the server to send opencv data to")
+parser.add_option("-p", "--port", dest="port",
+    help="port socket will use")
+
+(options, args) = parser.parse_args()
+#server address
+if options.server:
+    server_address = options.server
+if options.port:
+    server_port = options.port
 
 # Start a socket listening for connections on 0.0.0.0:8000 (0.0.0.0 means
 # all interfaces)
 server_socket = socket.socket()
-server_socket.bind(('0.0.0.0', 8000))
+server_socket.bind(('0.0.0.0', server_port))
 server_socket.listen(0)
 
 # Accept a single connection and make a file-like object out of it
