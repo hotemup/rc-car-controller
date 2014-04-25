@@ -28,7 +28,6 @@ upper2_cascade = cv2.CascadeClassifier('cascade_files/haarcascade_mcs_upperbody.
 #general
 run_loop = True
 server_address = 'http://127.0.0.1'
-server_address = 'http://192.168.1.100'
 server_port = 8000
 stream = io.BytesIO()
 robot_status = {}

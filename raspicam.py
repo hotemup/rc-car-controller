@@ -5,15 +5,13 @@ Outputs results to a stream
 
 """
 
-https://docs.python.org/2/library/optparse.html
-
 import json
 import os
-import picamera
 import io
 import socket
 import struct
 import time
+import picamera
 from optparse import OptionParser
 
 #constants
@@ -22,7 +20,6 @@ CAMERA_HEIGHT = 240
 
 #general
 server_address = '127.0.0.1'
-server_address = '192.168.1.14'
 server_port = 8000
 
 #command line arguments

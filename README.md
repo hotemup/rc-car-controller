@@ -35,13 +35,11 @@ Getting the Raspberry Pi Ready
  * wget http://node-arm.herokuapp.com/node_latest_armhf.deb
  * sudo dpkg -i node_latest_armhf.deb
 * Install node modules
- * npm install socket.io express johnny-five opencv raspicam
+ * npm install socket.io express johnny-five
 
 To run opencv.py
 * Install python libraries
  * sudo apt-get install libopencv-dev python-pip python-opencv python-dev python-picamera
-* Only for old_opencv.py - not needed otherwise
- * sudo pip install socketIO-client
 
 Using the Controller
 -------------------
@@ -65,7 +63,6 @@ File Layout
 * opencv.py - raspberry pi camera and opencv processing
  * only has face detection for now
  * updates opencv image in public folder
-* lbpcascade_frontalface.xml - currently used cascade file
 
 Possible Future Enhancements
 -----------------------------
@@ -83,7 +80,6 @@ Possible Future Library Requirements
 
 Other Information
 -----------------
-
 * If rpi-update doesn't work, git and/or certifications may be needed, use Hexxeh
  * $ sudo apt-get install ca-certificates
  * $ sudo apt-get install git-core
