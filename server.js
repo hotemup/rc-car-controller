@@ -19,6 +19,7 @@ var app = express()
   , io = require('socket.io').listen(server);
 //var zerorpc = require("zerorpc");
 
+// noArduino is to be used when the Raspberry Pi isn't connected to an Arduino through serial
 if (args.indexOf("noArduino") == -1) {
   var five = require("johnny-five")
     , board, servo;
@@ -56,6 +57,7 @@ stringValues = {
 serverStatus = {
     hasArduino: false,
     hasCamera: false,
+    currentAI: 'none',
 }
 
 // ----- socket.io -----
@@ -99,7 +101,8 @@ function processRobotCommand (command) {
   console.log(parsedCommand);
   
   if (serverStatus.hasArduino) {
-    // Manual commands - johnny five
+    // commands to johnny five
+    // A bit convoluted here: commands are split between '-', with an arbitrary order for each section
     if (parsedCommand[0] == 'manual') {
       if (parsedCommand[1] == 'throttle') {
         if (parsedCommand.length < 4) {
@@ -125,18 +128,18 @@ function processRobotCommand (command) {
     else if (parsedCommand[0] == 'face') {
       console.log('facing');
       if (parsedCommand[1] == 'begin') {
-        socket.broadcast.emit('robot ai', { 'command': 'face-start' });
+        serverStatus.currentAI = 'upper_body';
       }
       else {
-        socket.broadcast.emit('robot ai', { 'command': 'ai-stop' });
+        serverStatus.currentAI = 'none';
       }
     }
     else if (parsedCommand[0] == 'red') {
       if (parsedCommand[1] == 'begin') {
-        socket.broadcast.emit('robot ai', { 'command': 'red-start' });
+        serverStatus.currentAI = 'red';
       }
       else {
-        socket.broadcast.emit('robot ai', { 'command': 'ai-stop' });
+        serverStatus.currentAI = 'none';
       }
     }
     else {    // parsedCommand[0] = 'stop'

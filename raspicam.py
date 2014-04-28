@@ -1,7 +1,8 @@
 """Raspberry Pi Camera Script
 
 Uses picamera library to take pictures from the Raspberry Pi Camera
-Outputs results to a stream
+Outputs individual snapshots to a stream
+Set the stream-to location with --server <ADDRESS>
 
 """
 
@@ -51,14 +52,11 @@ client_socket.connect((server_address, server_port))
 
 #file object to be sent over connection
 connection = client_socket.makefile('wb')
+#capture_continuous actually drops after a period of time, so do again in that instance
 while True:
     with picamera.PiCamera() as camera:
         camera.resolution = (CAMERA_WIDTH, CAMERA_HEIGHT)
-        #start preview and warm up camera for a second
-        #camera.start_preview()
-        time.sleep(1)
         
-        #start recording and end on user input to stop
         start = time.time()
         stream = io.BytesIO()
         for foo in camera.capture_continuous(stream, 'jpeg'):
@@ -77,7 +75,5 @@ while True:
             stream.truncate()
     # Write a length of zero to the stream to signal we're done
     connection.write(struct.pack('<L', 0))
-#finally:
-    #close socket connections
 connection.close()
 client_socket.close()

@@ -1,10 +1,10 @@
 """Robot OpenCV and Controller Script
 
-Retrieve camera information from stream
-Communicates through sockets with a websocket server
+Retrieve camera information from stream (expected from raspicam.py)
 Applies OpenCV algorithms through video stills
-OpenCV results through the socket
-Receives robot commands from socket
+Sends OpenCV results to the rc controller via http call
+Receives robot commands from http call result
+Set the controller location with --server <ADDRESS>
 
 """
 
@@ -36,6 +36,7 @@ class PiCV:
         objects = self.cascade.detectMultiScale(gray, 1.3, 5)
         return objects
 
+# Store cascade classifier files in an array
 cascades = [
     #PiCV('cascade_files/lbpcascade_frontalface.xml', (255,0,0)),
     #PiCV('cascade_files/haarcascade_fullbody.xml', (0,255,0)),
@@ -43,18 +44,16 @@ cascades = [
     PiCV('cascade_files/haarcascade_mcs_upperbody.xml', (0,255,255)),
 ]
 
+#constants: should be same as ones in other files
 CAMERA_WIDTH = 320
 CAMERA_HEIGHT = 240
 COLOR_FOCUS = (255,255,0)
-face_cascade = cv2.CascadeClassifier('cascade_files/lbpcascade_frontalface.xml')
-body_cascade = cv2.CascadeClassifier('cascade_files/haarcascade_fullbody.xml')
-upper_cascade = cv2.CascadeClassifier('cascade_files/haarcascade_upperbody.xml')
-upper2_cascade = cv2.CascadeClassifier('cascade_files/haarcascade_mcs_upperbody.xml')
 
 #general
 run_loop = True
 server_address = 'http://127.0.0.1'
 server_port = 8000
+
 stream = io.BytesIO()
 robot_status = {}
 user_commands = []
@@ -66,6 +65,9 @@ parser.add_option("-s", "--server", dest="server",
     help="address of the server to send opencv data to")
 parser.add_option("-p", "--port", dest="port",
     help="port socket will use")
+parser.add_option("-n", "--nodisplay",
+    action="store_false", dest="displayImage", default=True,
+    help="don't display the results in a CV window")
 
 (options, args) = parser.parse_args()
 #server address
@@ -74,8 +76,7 @@ if options.server:
 if options.port:
     server_port = options.port
 
-# Start a socket listening for connections on 0.0.0.0:8000 (0.0.0.0 means
-# all interfaces)
+# Start a socket listening for connections (0.0.0.0 means all interfaces)
 server_socket = socket.socket()
 server_socket.bind(('0.0.0.0', server_port))
 server_socket.listen(0)
@@ -99,24 +100,31 @@ def detect_face(raw_image):
             else:
                 cv2.rectangle(after_image,(x,y),(x+w,y+h),cascade.color,2)
     
+    #if no objects found, stop acceleration
+    if (notFound):
+        user_commands.append('manual-throttle-stop')
+        robot_status ['Movement'] = 'None'
     return after_image
 
 #generate movement command based on cascade detection box properties
 def move_command(x, y, w, h):
+    #horizontol pixel difference between center of box and center of camera
     offCenter = x + w/2.0 - CAMERA_WIDTH/2.0
     print "({0}, {1}) {2}x{3}".format(x,y,w,h)
     print 'Off Center: ' + str(offCenter)
+    
+    #convert offcenter value to a percentage
+    off_center_percent = offCenter / CAMERA_WIDTH
+    print 'Off Center Percent: '  + str(off_center_percent)
+    
     robot_status ['General'] = 'Face found'
     robot_status ['Face Center X'] = 'X: ' + str(x + w/2)
     robot_status ['Face Center Y'] = 'Y: ' + str(y + h/2)
     robot_status ['Face Off Center'] = str(offCenter)
     
-    off_center_percent = offCenter / CAMERA_WIDTH
-    
+    #generate turn command based on degree off center
     if abs(off_center_percent) > 0.01:
         turn_amount = off_center_percent * 150.0 + 75
-        print offCenter
-        print off_center_percent
         user_commands.append('manual-turn-' + str(turn_amount))
         robot_status ['Direction'] = 'Turning to: ' + str(turn_amount)
     else:
@@ -124,6 +132,7 @@ def move_command(x, y, w, h):
         robot_status ['Direction'] = 'Neutral'
     
     #Adjust acceleration based on face box width
+    # A bit of a hack-job here, adjust values as needed
     if w < 70 and w > 40:
         #user_commands.append('manual-throttle-forward')
         move_for = (70 - w)
@@ -161,12 +170,14 @@ try:
         new_image = detect_face(image)
         
         # Display the resulting frame
-        cv2.imshow('camera',new_image)
+        if options.displayImage:
+            cv2.imshow('camera', new_image)
         print('Image is processed')
         for command in user_commands:
             response = urllib2.urlopen(server_address+'/command/?command='+command).read()
             print response
         
+        #end loop if 'q' is pressed
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
 finally:
