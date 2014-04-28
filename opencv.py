@@ -18,8 +18,34 @@ import cv2
 import urllib2
 from optparse import OptionParser
 
+# Class to store opencv cascade classifier details
+class PiCV:
+    cascade = None;
+    color = (255,0,0)
+    x = 0
+    y = 0
+    w = 0
+    h = 0
+    #Expects a valid classifier file, color tuple
+    def __init__(self, cascade_file, color):
+        #self.classifier = cv2.CascadeClassifier(cascade_file)
+        self.color = color
+
+    #Use a grayscale image for better results
+    def detect_classifier(base_image):
+        objects = self.cascade.detectMultiScale(gray, 1.3, 5)
+        return objects
+
+cascades = [
+    #PiCV('cascade_files/lbpcascade_frontalface.xml', (255,0,0)),
+    #PiCV('cascade_files/haarcascade_fullbody.xml', (0,255,0)),
+    #PiCV('cascade_files/haarcascade_upperbody.xml', (0,0,255)),
+    PiCV('cascade_files/haarcascade_mcs_upperbody.xml', (0,255,255)),
+]
+
 CAMERA_WIDTH = 320
 CAMERA_HEIGHT = 240
+COLOR_FOCUS = (255,255,0)
 face_cascade = cv2.CascadeClassifier('cascade_files/lbpcascade_frontalface.xml')
 body_cascade = cv2.CascadeClassifier('cascade_files/haarcascade_fullbody.xml')
 upper_cascade = cv2.CascadeClassifier('cascade_files/haarcascade_upperbody.xml')
@@ -62,27 +88,16 @@ def detect_face(raw_image):
     robot_status ['General'] = 'No face found'
     after_image = raw_image
     gray = cv2.cvtColor(raw_image,cv2.COLOR_BGR2GRAY)
-    faces = face_cascade.detectMultiScale(gray, 1.3, 5)
-    for (x,y,w,h) in faces:
-        cv2.rectangle(after_image,(x,y),(x+w,y+h),(255,0,0),2)
     
-    bodies = body_cascade.detectMultiScale(gray, 1.3, 5)
-    for (x,y,w,h) in bodies:
-        cv2.rectangle(after_image,(x,y),(x+w,y+h),(0,255,0),2)
-    
-    uppers = upper_cascade.detectMultiScale(gray, 1.3, 5)
-    for (x,y,w,h) in uppers:
-        cv2.rectangle(after_image,(x,y),(x+w,y+h),(0,0,255),2)
-    
-    #For now only apply movement to this
-    uppers2 = upper2_cascade.detectMultiScale(gray, 1.3, 5)
-    for (x,y,w,h) in uppers2:
-        if (notFound):
-            cv2.rectangle(after_image,(x,y),(x+w,y+h),(255,255,0),2)
-            move_command(x, y, w, h)
-            notFound = False
-        else:
-            cv2.rectangle(after_image,(x,y),(x+w,y+h),(0,255,255),2)
+    for cascade in cascades:
+        objects = cascade.cascade.detect_classifier(gray)
+        for (x,y,w,h) in objects:
+            if (notFound):
+                cv2.rectangle(after_image,(x,y),(x+w,y+h),COLOR_FOCUS,2)
+                move_command(x, y, w, h)
+                notFound = False
+            else:
+                cv2.rectangle(after_image,(x,y),(x+w,y+h),cascade.color,2)
     
     return after_image
 
