@@ -147,8 +147,11 @@
       
       var socket = '';
       var robotReady = false;
+      var url = document.URL;
       
       $(document).ready(function() {
+        $('#robot-address').val(url);
+        
         $('#robot-connect').click(connectToRobot);
       
         $('#robot_mode a').click(function (e) {
