@@ -28,12 +28,12 @@ class PiCV:
     h = 0
     #Expects a valid classifier file, color tuple
     def __init__(self, cascade_file, color):
-        #self.classifier = cv2.CascadeClassifier(cascade_file)
+        self.cascade = cv2.CascadeClassifier(cascade_file)
         self.color = color
 
     #Use a grayscale image for better results
-    def detect_classifier(base_image):
-        objects = self.cascade.detectMultiScale(gray, 1.3, 5)
+    def detect_classifier(self, base_image):
+        objects = self.cascade.detectMultiScale(base_image, 1.3, 5)
         return objects
 
 # Store cascade classifier files in an array
@@ -91,7 +91,7 @@ def detect_face(raw_image):
     gray = cv2.cvtColor(raw_image,cv2.COLOR_BGR2GRAY)
     
     for cascade in cascades:
-        objects = cascade.cascade.detect_classifier(gray)
+        objects = cascade.detect_classifier(gray)
         for (x,y,w,h) in objects:
             if (notFound):
                 cv2.rectangle(after_image,(x,y),(x+w,y+h),COLOR_FOCUS,2)
